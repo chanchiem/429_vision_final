@@ -39,8 +39,7 @@ def test(command=None):
 
 @app.route("/cmd/req_picture")
 def take_picture():
-    # img = cv2.imencode('.jpg', cam.sample_image())[1];
-    # img = cv2.imread('test.jpg', cv2.IMREAD_COLOR);
+    img = camera.sample_image()
 
     # camera.annotate_background = True
     # camera.annotate_text = dt.datetime.now().strftime('%Y-%m-%d %I:%M.%S %p')
@@ -52,7 +51,7 @@ def take_picture():
 
     picture_obj = {
         'timestamp' : datetime.datetime.now().strftime("%Y-%m-%d at %I.%M.%S %p"),
-        'picture' : base64.b64encode(img)
+        'encoded_picture' : base64.b64encode(img)
     }
     return json.dumps(picture_obj)
 

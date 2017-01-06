@@ -19,7 +19,11 @@ time.sleep(.5)
 
 def sample_image():
 	ret, img = cam.read()
-	return img
+	ret, jpg_img = cv2.imencode('.jpg', img);
+
+	# Resize the image
+	# jpg_img2 = cv2.resize(jpg_img, (480, 640));
+	return jpg_img
 
 def stop():
 	cam.release()

@@ -16,7 +16,21 @@
             }
 
             function send_command(cmd) {
-                $.ajax({ url: '/cmd/' + cmd})
+                $.ajax({ 
+                    url: '/cmd/' + cmd,
+                    type: 'GET',
+                    success: handle_image
+            })
+            }
+
+            function handle_image(data) {
+                var json_data = JSON.parse(data);
+
+                var img = json_data['encoded_picture'];
+                var timestamp = json_data['timestamp'];
+
+                // console.log(img);
+                $('#image_placeholder').attr("src", "data:image/jpg;base64," + img);
             }
 
         </script>
@@ -26,12 +40,12 @@
         <table align="center" class="style1">
             <tr>
                 <td colspan="2" style="text-align: center">
-					<img src="image.png"/>
+					<img id="image_placeholder" src="data:image/png;base64,"/>
                 </td>
             </tr>
             <tr>
                 <td colspan="2" style="text-align: center">
-                    <input id="btnUp" type="button" value="Take Picture" onclick="send_command('picture')" />
+                    <input id="btnUp" type="button" value="Take Picture" onclick="send_command('req_picture')" />
                 </td>
             </tr>
         </table>
