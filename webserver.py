@@ -41,7 +41,6 @@ def test(command=None):
 def take_picture():
     # img = cv2.imencode('.jpg', cam.sample_image())[1];
     # img = cv2.imread('test.jpg', cv2.IMREAD_COLOR);
-    camera.
 
     # camera.annotate_background = True
     # camera.annotate_text = dt.datetime.now().strftime('%Y-%m-%d %I:%M.%S %p')
