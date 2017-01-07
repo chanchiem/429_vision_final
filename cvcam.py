@@ -14,10 +14,31 @@ import time
 import imutils
 import numpy
 
+face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+
 print "Starting up camera..."
-cam = cv2.VideoCapture(1)
+camera = cv2.VideoCapture(0)
 time.sleep(.5)
 
+while True:
+	(grabbed, frame) = camera.read()
+	
+	if not grabbed: 
+		break
+		
+	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+	
+	faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+	for (x,y,w,h) in faces:
+		img = cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),2)
+	
+	cv2.imshow('frame', frame)
+	
+	key = cv2.waitKey(1) & 0xFF
+	if key == ord("q"):
+		break
+
+cv2.destroyAllWindows()
 
 def sample_image(scale=1):
     ret, img = cam.read()
