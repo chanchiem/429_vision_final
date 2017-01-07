@@ -3,6 +3,7 @@ import json
 from flask import Flask, render_template, request
 import subprocess
 import sys
+
 sys.path.insert(0, 'commands')
 
 import time
@@ -14,22 +15,30 @@ import io
 
 app = Flask(__name__)
 
+## USEFUL VALUES ##
+
+OUTPUT_IMG_SCALE    =   0.5
+
+###################
+
 
 @app.before_first_request
 def do_something_only_once():
     global camera, log
     log = io.open('log.txt', 'wb');
 
+
 @app.route("/")
 def main():
     # global cam
     # Create a template data dictionary to send any data to the template
     templateData = {
-        'title' : 'Chiem Cam'
-        }
+        'title': 'Chiem Cam'
+    }
 
     # Pass the template data into the template picam.html and return it to the user
     return render_template('index.html', **templateData)
+
 
 @app.route("/cmd/")
 @app.route("/cmd/<command>")
@@ -37,9 +46,10 @@ def test(command=None):
     print command
     return command
 
+
 @app.route("/cmd/req_picture")
 def take_picture():
-    img = camera.sample_image()
+    img = camera.sample_image(OUTPUT_IMG_SCALE)
 
     # camera.annotate_background = True
     # camera.annotate_text = dt.datetime.now().strftime('%Y-%m-%d %I:%M.%S %p')
@@ -50,13 +60,15 @@ def take_picture():
     log.flush()
 
     picture_obj = {
-        'timestamp' : datetime.datetime.now().strftime("%Y-%m-%d at %I.%M.%S %p"),
-        'encoded_picture' : base64.b64encode(img)
+        'timestamp': datetime.datetime.now().strftime("%Y-%m-%d at %I.%M.%S %p"),
+        'encoded_picture': base64.b64encode(img)
     }
     return json.dumps(picture_obj)
+
 
 if __name__ == "__main__":
     # # allow the camera to warmup
     time.sleep(0.1)
     import cvcam as camera
+
     app.run(debug=True, host='0.0.0.0')

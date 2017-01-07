@@ -11,22 +11,29 @@
 import cv2
 import datetime
 import time
+import imutils
 import numpy
 
 print "Starting up camera..."
 cam = cv2.VideoCapture(1)
 time.sleep(.5)
 
-def sample_image():
-	ret, img = cam.read()
-	ret, jpg_img = cv2.imencode('.jpg', img);
 
-	# Resize the image
-	# jpg_img2 = cv2.resize(jpg_img, (480, 640));
-	return jpg_img
+def sample_image(scale=1):
+    ret, img = cam.read()
+
+    # Resize the scale of the image
+    height = len(img)
+    width = len(img[0])
+    img = imutils.resize(img, width=int(width*scale), height=int(height*scale));
+
+    ret, jpg_img = cv2.imencode('.jpg', img);
+
+    return jpg_img
+
 
 def stop():
-	cam.release()
+    cam.release()
 
-# cv2.destroyAllWindows()
-# stop()
+    # cv2.destroyAllWindows()
+    # stop()

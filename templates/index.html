@@ -1,53 +1,66 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" >
-    <head>
-        <title>PiCam</title>
-        <style type="text/css">
-            .style1
-            {
-                width: 50%;
-            }
-        </style>
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-        <script language="javascript" type="text/javascript">
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>PiCam</title>
+    <style type="text/css">
+        .style1 {
+            width: 50%;
+        }
+    </style>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script language="javascript" type="text/javascript">
 
-            function Button_onclick(direction) {
-                $.ajax({ url: '/' + direction });
-            }
+        var isStream = false;
+        var responseTime = new Date().getTime(); // Used for request->response timing
 
-            function send_command(cmd) {
-                $.ajax({ 
-                    url: '/cmd/' + cmd,
-                    type: 'GET',
-                    success: handle_image
+        function Button_onclick(direction) {
+            $.ajax({url: '/' + direction});
+        }
+
+        function request_image(callback) {
+            $('#timestamp').text("Requesting image..."); // Mark timestamp
+            responseTime = new Date().getTime();
+
+            $.ajax({
+                url: '/cmd/req_picture',
+                type: 'GET',
+                success: callback
             })
-            }
+        }
 
-            function handle_image(data) {
-                var json_data = JSON.parse(data);
+        function handle_image_response(data) {
+            var json_data = JSON.parse(data);
 
-                var img = json_data['encoded_picture'];
-                var timestamp = json_data['timestamp'];
+            var img = json_data['encoded_picture'];
+            var timestamp = json_data['timestamp'];
+            var nowTime = new Date().getTime();
 
-                // console.log(img);
-                $('#image_placeholder').attr("src", "data:image/jpg;base64," + img);
-            }
+            // Write image data to placeholder
+            $('#image_placeholder').attr("src", "data:image/jpg;base64," + img);
+            $('#timestamp').text("Picture taken on: " + timestamp); // Mark timestamp
+            $('#ping').text("Response time: " + ((nowTime - responseTime) / 1000) + " seconds.");
+        }
 
-        </script>
-    </head>
-    <body> 
 
-        <table align="center" class="style1">
-            <tr>
-                <td colspan="2" style="text-align: center">
-					<img id="image_placeholder" src="data:image/png;base64,"/>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2" style="text-align: center">
-                    <input id="btnUp" type="button" value="Take Picture" onclick="send_command('req_picture')" />
-                </td>
-            </tr>
-        </table>
-    </body>
+    </script>
+</head>
+<body onload="request_image(handle_image_response)">
+
+<table align="center" class="style1">
+    <tr>
+        <td colspan="2" style="text-align: center">
+            <div id="timestamp">TIMESTAMP</div>
+            <img id="image_placeholder" src="data:image/png;base64,"/>
+            <div id="ping">PING</div>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" style="text-align: center">
+            <input id="btnUp" type="button" value="Take Picture" onclick="request_image(handle_image_response)"/>
+            <!--<input id="btnUp" type="button" value="Start Live Stream" onclick="start_stream()"/>-->
+        </td>
+    </tr>
+</table>
+</body>
 </html>
