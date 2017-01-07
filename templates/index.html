@@ -7,13 +7,38 @@
         .style1 {
             width: 50%;
         }
-        .space {margin-top: 500px; }
+
+        .space {
+            margin-top: 500px;
+        }
     </style>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <script language="javascript" type="text/javascript">
 
-        var isStream = false;
+        // Activate image clicking forwarding.
+        $('#image_placeholder').ready(function () {
+            $('img').click(function (e) {
+                var offset = $(this).offset();
+                var x_offset = e.pageX - offset.left;
+                var y_offset = e.pageY - offset.top;
+
+                $.ajax({
+                    url: "cmd/clicked_picture",
+                    type: 'GET',
+                    data: {
+                        x: x_offset,
+                        y: y_offset,
+                        width: $(this).width(),
+                        height: $(this).height()
+                    },
+                    success: function(data) { alert(data); }
+                });
+            });
+        });
+
+        var isStreaming = false;
         var responseTime = new Date().getTime(); // Used for request->response timing
+        //        $('#image_placeholder').on("click", function() { alert('fuck')}, false)
 
         function Button_onclick(direction) {
             $.ajax({url: '/' + direction});
@@ -21,11 +46,11 @@
 
 
         // Sends custom command to the server.
-        function send_debug_command() {
+        function send_debug_command(command) {
             $.ajax({
-                url: $('#debug_cmd')[0].value,
+                url: command,
                 type: 'GET',
-                success: function(data) {
+                success: function (data) {
                     $('#debug_log').text(data)
                 }
             })
@@ -56,9 +81,11 @@
             $('#ping').text("Response time: " + ((nowTime - responseTime) / 1000) + " seconds.");
         }
 
+
+        var imgCount = 0;
         // Start automatic streaming (As of right now, it's a pseudostream ;))
         function start_stream_request() {
-            if (!isStream) return;
+            if (!isStreaming) return;
             $('#timestamp').text("Live stream started"); // Mark timestamp
             responseTime = new Date().getTime();
 
@@ -71,6 +98,7 @@
 
         function handle_image_stream(data) {
             var json_data = JSON.parse(data);
+            imgCount++;
 
             var img = json_data['encoded_picture'];
             var timestamp = json_data['timestamp'];
@@ -80,8 +108,17 @@
             $('#image_placeholder').attr("src", "data:image/jpg;base64," + img);
             $('#timestamp').text("Picture taken on: " + timestamp); // Mark timestamp
 //            $('#ping').text("Response time: " + ((nowTime - responseTime) / 1000) + " seconds.");
-            $('#ping').text("FPS: " + (1 / ((nowTime - responseTime) / 1000)) + " sdf.");
+
+//            if (nowTime % 2 == 0) {
+//                $('#ping').text((imgCount * 2).toFixed(2) + " frames per second."); // Crude FPS counter
+//                imgCount = 0;
+//            }
+            $('#ping').text((1 / ((nowTime - responseTime) / 1000)).toFixed(2) + " frames per second."); // Crude FPS counter
             start_stream_request();
+        }
+
+        function getClickPosition(e) {
+            console.log(e.clientX + " " + e.clientY);
         }
 
     </script>
@@ -93,7 +130,7 @@
         <td colspan="2" style="text-align: center">
             <div id="timestamp">Picture taken on: 2017-01-07 at 12.18.52 PM</div>
             <img id="image_placeholder" src="data:image/png;base64,"/>
-             <!--<img src="{{url_for('video_feed')}}" />-->
+            <!--<img src="{{url_for('video_feed')}}" />-->
             <div id="ping">Response Time: 0.022 seconds.</div>
         </td>
     </tr>
@@ -103,10 +140,18 @@
             <input id="btnStream" type="button" value="Start Live Stream"
                    onclick="new function()
                                 {
-                                    isStream ? $('#btnStream').attr('value', 'Start Live Stream') : $('#btnStream').attr('value', 'End Live Stream');
-                                    isStream = !isStream;
+                                    if (isStreaming) {
+                                        // Turn off live streaming
+                                        $('#btnStream').attr('value', 'Start Live Stream')
+                                        $('#btnPic').prop('disabled', false);
+                                    } else {
+                                        // Turn on live streaming
+                                        $('#btnStream').attr('value', 'End Live Stream');
+                                        $('#btnPic').prop('disabled', true);
+                                    }
+                                    isStreaming = !isStreaming;
                                     start_stream_request();
-                                }" />
+                                }"/>
         </td>
     </tr>
     <tr>
@@ -114,9 +159,10 @@
             <p></p><br>
             Debugger:
             <br>
-            <textarea id="debug_cmd" rows="4" cols="50" value="Input commands here">/cmd/video_feed</textarea>
+            <textarea id="debug_cmd" rows="4" cols="50" value="Input commands here">/cmd/req_picture</textarea>
             <br>
-            <input id="debug_send" type="button" value="Send Command" onclick="send_debug_command()"/>
+            <input id="debug_send" type="button" value="Send Command"
+                   onclick="send_debug_command($('#debug_cmd')[0].value)"/>
             <br><br>
             <textarea id="debug_log" rows="48" cols="160" readonly>Output</textarea><br>
             <!--<input id="btnUp" type="button" value="Start Live Stream" onclick="start_stream()"/>-->

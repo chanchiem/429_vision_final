@@ -47,6 +47,8 @@ def test(command=None):
 
 
 ## DOESN"T WORK RIGHT NOW
+## This is to implement a multipart image stream (more efficient because doesn't require constant
+## re-requests of frames. It's just a single stream.
 # Generator function for the camera feed
 def gen():
     frame = base64.b64encode(camera.sample_image());
@@ -79,6 +81,15 @@ def take_picture():
     }
 
     return json.dumps(picture_obj)
+
+@app.route("/cmd/clicked_picture")
+def click_picture():
+    x_pos = request.args.get('x')
+    y_pos = request.args.get('y')
+    client_img_width = request.args.get('width')
+    client_img_height = request.args.get('height')
+
+    return "x: " + str(x_pos) + " - y: " + str(y_pos) + " - width: " + client_img_width + " - height: " + client_img_height;
 
 
 if __name__ == "__main__":
