@@ -1,6 +1,6 @@
 import datetime, base64
 import json
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, Response
 import subprocess
 import sys
 
@@ -40,11 +40,25 @@ def main():
     return render_template('index.html', **templateData)
 
 
-@app.route("/cmd/")
 @app.route("/cmd/<command>")
 def test(command=None):
-    print command
-    return command
+    print "Received invalid command: " + command
+    return "Received invalid command: " + command
+
+
+## DOESN"T WORK RIGHT NOW
+# Generator function for the camera feed
+def gen():
+    frame = base64.b64encode(camera.sample_image());
+    yield (b'--frame\r\n'
+           b'Content-Type: image/jpeg\r\n\r\n' + "data:image/jpeg;base64," + frame + b'\r\n')
+
+
+@app.route("/cmd/video_feed")
+def video_feed():
+    return Response(gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+##########################
 
 
 @app.route("/cmd/req_picture")
@@ -63,6 +77,7 @@ def take_picture():
         'timestamp': datetime.datetime.now().strftime("%Y-%m-%d at %I.%M.%S %p"),
         'encoded_picture': base64.b64encode(img)
     }
+
     return json.dumps(picture_obj)
 
 
