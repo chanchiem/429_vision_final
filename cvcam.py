@@ -9,44 +9,56 @@
 ########################################################################
 ########################################################################
 import cv2
-import datetime
 import time
 import imutils
-import numpy
+import thread
 
-face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+face_cascade = cv2.CascadeClassifier(
+    '/Users/ChiemSaeteurn/PycharmProjects/Cos429_Final/haarcascade_frontalface_default.xml')
 
 print "Starting up camera..."
-camera = cv2.VideoCapture(0)
+cam = cv2.VideoCapture(1)
 time.sleep(.5)
+ret, img = cam.read()
 
-while True:
-	(grabbed, frame) = camera.read()
-	
-	if not grabbed: 
-		break
-		
-	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-	
-	faces = face_cascade.detectMultiScale(gray, 1.3, 5)
-	for (x,y,w,h) in faces:
-		img = cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),2)
-	
-	cv2.imshow('frame', frame)
-	
-	key = cv2.waitKey(1) & 0xFF
-	if key == ord("q"):
-		break
 
-cv2.destroyAllWindows()
+# Define a function for the thread
+def start_face_detection(output_scale=.5):
+    while True:
+        global img
+        grabbed, raw_img = cam.read()
+        height = len(raw_img)
+        width = len(raw_img[0])
+        face_detect_scale = .25
+        # This is the one used for face detection. Full resolution is not necessary.
+        img_for_faces = imutils.resize(raw_img, width=int(width * face_detect_scale), height=int(height * face_detect_scale))
+        out_img = imutils.resize(raw_img, width=int(width * output_scale), height=int(height * output_scale))
+
+        if not grabbed:
+            break
+
+        gray = cv2.cvtColor(img_for_faces, cv2.COLOR_BGR2GRAY)
+        extrapolate_scale = output_scale/face_detect_scale
+        faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+        for (x, y, w, h) in faces:
+            frame = cv2.rectangle(out_img, (int(x * extrapolate_scale), int(y * extrapolate_scale)), (int(x * extrapolate_scale + w * extrapolate_scale), int(y * extrapolate_scale + h * extrapolate_scale)), (255, 0, 0), 2)
+
+        img = out_img
+
+# Create two threads as follows
+try:
+    thread.start_new_thread(start_face_detection, ())
+except:
+    print "Error: unable to start thread"
 
 def sample_image(scale=1):
-    ret, img = cam.read()
+    global img
+    # ret, img = cam.read()
 
     # Resize the scale of the image
-    height = len(img)
-    width = len(img[0])
-    img = imutils.resize(img, width=int(width*scale), height=int(height*scale));
+    # height = len(img)
+    # width = len(img[0])
+    # img = imutils.resize(img, width=int(width*scale), height=int(height*scale));
 
     ret, jpg_img = cv2.imencode('.jpg', img);
 
