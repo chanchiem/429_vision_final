@@ -7,8 +7,6 @@ import sys
 sys.path.insert(0, 'commands')
 
 import time
-import cv2
-import imutils
 import datetime as dt
 
 import io
@@ -65,12 +63,7 @@ def video_feed():
 
 @app.route("/cmd/req_picture")
 def take_picture():
-    img = camera.sample_image(OUTPUT_IMG_SCALE)
-
-    # camera.annotate_background = True
-    # camera.annotate_text = dt.datetime.now().strftime('%Y-%m-%d %I:%M.%S %p')
-    # camera.capture(rawCapture, format="bgr")
-    # img = cv2.imencode('.png', rawCapture.array)[1];
+    img = camera.sample_image_from_operation()
 
     log.write('Took picture: ' + dt.datetime.now().strftime('%Y-%m-%d at %I.%M.%S %p') + '\n');
     log.flush()
@@ -89,6 +82,9 @@ def click_picture():
     client_img_width = request.args.get('width')
     client_img_height = request.args.get('height')
 
+    # camera.start_cv_operation(camera.RAW_VIDEO)
+    camera.cv_thread.operation = camera.RAW_VIDEO
+
     return "x: " + str(x_pos) + " - y: " + str(y_pos) + " - width: " + client_img_width + " - height: " + client_img_height;
 
 
@@ -96,5 +92,7 @@ if __name__ == "__main__":
     # # allow the camera to warmup
     time.sleep(0.1)
     import cvcam as camera
+    camera.set_image_scale(OUTPUT_IMG_SCALE)
+    camera.start_cv_operation(camera.FACE_DETECTION)
 
     app.run(debug=True, host='0.0.0.0')
