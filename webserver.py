@@ -57,7 +57,7 @@ def test(command=None):
 ## DOESN"T WORK RIGHT NOW
 ## This is to implement a multipart image stream (more efficient because doesn't require constant
 ## re-requests of frames. It's just a single stream.
-# Generator function for the camera feed
+## Generator function for the camera feed
 def gen():
     frame = base64.b64encode(camera.sample_image());
     yield (b'--frame\r\n'
