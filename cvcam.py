@@ -29,13 +29,13 @@ class CVThread(threading.Thread):
             # RAW IMAGE OUTPUT
             if self.operation == CVEnumerations.RAW_IMAGE:
                 global img
-                ret, img = get_raw_image()
+                grabbed, img = get_raw_image()
             # FACE DETECTION
             elif self.operation == CVEnumerations.FACE_DETECTION:
                 grabbed, raw_img = get_raw_image()
                 height = len(raw_img)
                 width = len(raw_img[0])
-                face_detect_scale = .25  # resizing factor before we apply HAAR Cascade
+                face_detect_scale = 1  # resizing factor before we apply HAAR Cascade
                 # This is the one used for face detection. Full resolution is not necessary.
                 img_for_faces = imutils.resize(raw_img, width=int(width * face_detect_scale),
                                                height=int(height * face_detect_scale))
@@ -110,8 +110,6 @@ class CVThread(threading.Thread):
         print "end thread"
 
 
-###
-
 ## Singleton Variables ##
 #face_cascade = cv2.CascadeClassifier(
 #    '/Users/ChiemSaeteurn/PycharmProjects/Cos429_Final/haarcascade_frontalface_default.xml')
@@ -156,6 +154,8 @@ def set_image_scale(scale):
 
 def get_raw_image():
     ret, raw_img = cam.read()
+    height = len(raw_img)
+    width = len(raw_img[0])
     res_img = imutils.resize(raw_img, width=int(width * image_out_scale), height=int(height * image_out_scale))
     return ret, res_img
 
@@ -177,3 +177,19 @@ def stop():
     cam.release()
     # cv2.destroyAllWindows()
     # stop()
+
+
+######################
+## Start Everything ##
+######################
+
+face_cascade = cv2.CascadeClassifier(
+    '/Users/ChiemSaeteurn/PycharmProjects/Cos429_Final/haarcascade_frontalface_default.xml')
+image_out_scale = .5  # Used for output image resizing
+
+print "Starting up camera..."
+cam = cv2.VideoCapture(1)
+time.sleep(.5)
+ret, img = get_raw_image()
+
+cv_thread = CVThread(CVEnumerations.RAW_IMAGE)

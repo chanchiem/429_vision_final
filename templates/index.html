@@ -100,6 +100,14 @@
 
 
         var imgCount = 0;
+        // FPS Counter
+            window.setInterval(function() { // Every 200 ms
+                if (isStreaming) {
+                    $('#ping').text(imgCount * 5 + " frames per second."); // Crude FPS counter
+                    imgCount = 0;
+                }
+            }, 200)
+        
         // Start automatic streaming (As of right now, it's a pseudostream ;))
         function start_stream_request() {
             if (!isStreaming) return;
@@ -113,6 +121,7 @@
             })
         }
 
+        var imgCount = 0;
         function handle_image_stream(data) {
             var json_data = JSON.parse(data);
             imgCount++;
@@ -127,7 +136,14 @@
             $('#image_placeholder').attr("src", "data:image/jpg;base64," + img);
             $('#timestamp').text("Picture taken on: " + timestamp); // Mark timestamp
             handle_operation_selection(cv_operation);
-            $('#ping').text((1 / ((nowTime - responseTime) / 1000)).toFixed(2) + " frames per second."); // Crude FPS counter
+//            $('#ping').text((1 / ((nowTime - responseTime) / 1000)).toFixed(2) + " frames per second."); // Crude FPS counter
+
+//            // FPS Counter
+//            window.setTimeout(function() {
+//                $('#ping').text(image_cycle_count + " frames per second."); // Crude FPS counter
+//                image_cycle_count = 0;
+//            }, 1000)
+
             start_stream_request();
         }
 
@@ -136,13 +152,10 @@
         }
 
         // Request a single image from the server.
-        var requesting_operation_change = false;
         function request_operation_change(operation) {
-            requesting_operation_change = true;
             $.ajax({
                 url: '/cmd/' + operation,
-                type: 'GET',
-                success: new function() { var requesting_operation_change = false }
+                type: 'GET'
             })
         }
 
@@ -154,7 +167,7 @@
     <tr>
         <td colspan="2" style="text-align: center">
             <div id="timestamp">Picture taken on: 2017-01-07 at 12.18.52 PM</div>
-            <img id="image_placeholder" src="data:image/png;base64,"/>
+            <img id="image_placeholder" src="data:image/jpeg;base64,"/>
             <!--<img src="{{url_for('video_feed')}}" />-->
             <div id="ping">Response Time: 0.022 seconds.</div>
         </td>
