@@ -109,31 +109,6 @@ class CVThread(threading.Thread):
 
         print "end thread"
 
-
-## Singleton Variables ##
-#face_cascade = cv2.CascadeClassifier(
-#    '/Users/ChiemSaeteurn/PycharmProjects/Cos429_Final/haarcascade_frontalface_default.xml')
-face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
-image_out_scale = .5  # Used for output image resizing
-
-print "Starting up camera..."
-#cam = cv2.VideoCapture(1)
-cam = cv2.VideoCapture(0)
-time.sleep(.5)
-ret, img = cam.read()
-height = len(img)
-width = len(img[0])
-img = imutils.resize(img, width=int(width * image_out_scale), height=int(height * image_out_scale))
-
-cv_thread = CVThread(CVEnumerations.RAW_IMAGE)
-
-compFrame = None
-start = time.time()
-#frameDeltaSumPrev = 0
-#frameDeltaSumCurr = 0
-#frameDelta = None
-
-
 ############################
 
 def get_current_cv_operation():
@@ -183,13 +158,20 @@ def stop():
 ## Start Everything ##
 ######################
 
-face_cascade = cv2.CascadeClassifier(
-    '/Users/ChiemSaeteurn/PycharmProjects/Cos429_Final/haarcascade_frontalface_default.xml')
+#face_cascade = cv2.CascadeClassifier(
+#    '/Users/ChiemSaeteurn/PycharmProjects/Cos429_Final/haarcascade_frontalface_default.xml')
+face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')    
 image_out_scale = .5  # Used for output image resizing
 
 print "Starting up camera..."
-cam = cv2.VideoCapture(1)
+cam = cv2.VideoCapture(0)
 time.sleep(.5)
 ret, img = get_raw_image()
 
 cv_thread = CVThread(CVEnumerations.RAW_IMAGE)
+
+compFrame = None
+start = time.time()
+#frameDeltaSumPrev = 0
+#frameDeltaSumCurr = 0
+#frameDelta = None
