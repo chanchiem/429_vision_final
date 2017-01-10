@@ -41,7 +41,8 @@ def main():
         'RAW_IMAGE': CVEnumerations.RAW_IMAGE,
         'FACE_DETECTION': CVEnumerations.FACE_DETECTION,
         'MOTION_DETECTION': CVEnumerations.MOTION_DETECTION,
-        'CANNY_EDGE_DETECTION': CVEnumerations.CANNY_EDGE_DETECTION
+        'CANNY_EDGE_DETECTION': CVEnumerations.CANNY_EDGE_DETECTION,
+        'CORNER_DETECTION': CVEnumerations.CORNER_DETECTION
     }
 
     # Pass the template data into the template picam.html and return it to the user
@@ -100,7 +101,7 @@ def raw_img():
     camera.switch_cv_operation(CVEnumerations.RAW_IMAGE)
     return "1"
 
-@app.route("/cmd/cv_face_detection")
+@app.route("/cmd/cv_face_detect")
 def face_detect():
     camera.switch_cv_operation(CVEnumerations.FACE_DETECTION)
     return "1"
@@ -114,6 +115,11 @@ def motion_detect():
 @app.route("/cmd/cv_canny_edge_detect")
 def canny_edge_detect():
     camera.switch_cv_operation(CVEnumerations.CANNY_EDGE_DETECTION)
+    return "1"
+
+@app.route("/cmd/cv_corner_detect")
+def corner_detect():
+    camera.switch_cv_operation(CVEnumerations.CORNER_DETECTION)
     return "1"
 
 
