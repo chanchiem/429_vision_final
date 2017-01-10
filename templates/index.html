@@ -100,16 +100,15 @@
                 $('#operation_corner')[0].selected = true
         }
 
-
         var imgCount = 0;
         // FPS Counter
-            window.setInterval(function() { // Every 200 ms
-                if (isStreaming) {
-                    $('#ping').text(imgCount + " frames per second."); // Crude FPS counter
-                    imgCount = 0;
-                }
-            }, 1000)
-        
+        window.setInterval(function () { // Every 200 ms
+            if (isStreaming) {
+                $('#ping').text(imgCount + " frames per second."); // Crude FPS counter
+                imgCount = 0;
+            }
+        }, 1000)
+
         // Start automatic streaming (As of right now, it's a pseudostream ;))
         function start_stream_request() {
             if (!isStreaming) return;
@@ -197,16 +196,19 @@
                 <option id="operation_raw" onclick="request_operation_change(this.value)" value="cv_raw_img" {% if
                         get_current_cv_operation== RAW_IMAGE %} selected {% endif %}>Raw Image
                 </option>
-                <option id="operation_face"onclick="request_operation_change(this.value)" value="cv_face_detect" {% if
+                <option id="operation_face" onclick="request_operation_change(this.value)" value="cv_face_detect" {% if
                         get_current_cv_operation== FACE_DETECTION %} selected {% endif %}>Face Detection
                 </option>
-                <option id="operation_motion" onclick="request_operation_change(this.value)" value="cv_motion_detect" {% if
+                <option id="operation_motion" onclick="request_operation_change(this.value)" value="cv_motion_detect" {%
+                        if
                         get_current_cv_operation== MOTION_DETECTION %} selected {% endif %}>Motion Detection
                 </option>
-                <option id="operation_canny_edge" onclick="request_operation_change(this.value)" value="cv_canny_edge_detect" {% if
+                <option id="operation_canny_edge" onclick="request_operation_change(this.value)"
+                        value="cv_canny_edge_detect" {% if
                         get_current_cv_operation== CANNY_EDGE_DETECTION %} selected {% endif %}>Canny Edge Detection
                 </option>
-                <option id="operation_corner" onclick="request_operation_change(this.value)" value="cv_corner_detect" {% if
+                <option id="operation_corner" onclick="request_operation_change(this.value)" value="cv_corner_detect" {%
+                        if
                         get_current_cv_operation== CORNER_DETECTION %} selected {% endif %}>Corner Detection
                 </option>
             </select>

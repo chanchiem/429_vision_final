@@ -106,6 +106,7 @@ class CVThread(threading.Thread):
             elif self.operation == CVEnumerations.CANNY_EDGE_DETECTION:
                 grabbed, raw_img = get_raw_image()
                 img = cv2.Canny(raw_img, 100, 200)
+            # CORNER DETECTION
             elif self.operation == CVEnumerations.CORNER_DETECTION:
                 global img
                 grabbed, raw_img = get_raw_image()
@@ -117,7 +118,7 @@ class CVThread(threading.Thread):
                 dst = cv2.dilate(dst, None)
 
                 # Threshold for an optimal value, it may vary depending on the image.
-                raw_img[dst>0.01*dst.max()]=[0,0,255]
+                raw_img[dst > 0.01 * dst.max()] = [0, 0, 255]
                 img = raw_img
         print "end thread"
 

@@ -16,7 +16,8 @@ app = Flask(__name__)
 
 ## USEFUL VALUES ##
 
-OUTPUT_IMG_SCALE    =   0.5
+OUTPUT_IMG_SCALE = 0.5
+
 
 ###################
 
@@ -69,6 +70,7 @@ def gen():
 def video_feed():
     return Response(gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
+
 ##########################
 
 
@@ -87,6 +89,7 @@ def take_picture():
 
     return json.dumps(picture_obj)
 
+
 @app.route("/cmd/clicked_picture")
 def click_picture():
     x_pos = request.args.get('x')
@@ -94,12 +97,15 @@ def click_picture():
     client_img_width = request.args.get('width')
     client_img_height = request.args.get('height')
 
-    return "x: " + str(x_pos) + " - y: " + str(y_pos) + " - width: " + client_img_width + " - height: " + client_img_height;
+    return "x: " + str(x_pos) + " - y: " + str(
+        y_pos) + " - width: " + client_img_width + " - height: " + client_img_height;
+
 
 @app.route("/cmd/cv_raw_img")
 def raw_img():
     camera.switch_cv_operation(CVEnumerations.RAW_IMAGE)
     return "1"
+
 
 @app.route("/cmd/cv_face_detect")
 def face_detect():
@@ -112,10 +118,12 @@ def motion_detect():
     camera.switch_cv_operation(CVEnumerations.MOTION_DETECTION)
     return "1"
 
+
 @app.route("/cmd/cv_canny_edge_detect")
 def canny_edge_detect():
     camera.switch_cv_operation(CVEnumerations.CANNY_EDGE_DETECTION)
     return "1"
+
 
 @app.route("/cmd/cv_corner_detect")
 def corner_detect():
@@ -126,11 +134,15 @@ def corner_detect():
 if __name__ == "__main__":
     # # allow the camera to warmup
     import cvcam as camera
+
     app.run(debug=True, host='0.0.0.0')
 
 import atexit
+
+
 def exit_handler():
     camera.stop()
     print "My application is ending!"
+
 
 atexit.register(exit_handler)
