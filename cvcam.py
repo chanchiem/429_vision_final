@@ -27,42 +27,33 @@ class CVThread(threading.Thread):
             # RAW IMAGE OUTPUT
             if self.operation == CVEnumerations.RAW_IMAGE:
                 global img
-                ret, out_img = cam.read()
-                img = imutils.resize(out_img, width=int(width * image_out_scale),
-                                     height=int(height * image_out_scale))
-
+                ret, img = get_raw_image()
             # FACE DETECTION
             elif self.operation == CVEnumerations.FACE_DETECTION:
-                global img
-                grabbed, raw_img = cam.read()
+                grabbed, raw_img = get_raw_image()
                 height = len(raw_img)
                 width = len(raw_img[0])
                 face_detect_scale = .25  # resizing factor before we apply HAAR Cascade
                 # This is the one used for face detection. Full resolution is not necessary.
                 img_for_faces = imutils.resize(raw_img, width=int(width * face_detect_scale),
                                                height=int(height * face_detect_scale))
-                out_img = imutils.resize(raw_img, width=int(width * image_out_scale),
-                                         height=int(height * image_out_scale))
-
                 if not grabbed:
                     return
 
                 gray = cv2.cvtColor(img_for_faces, cv2.COLOR_BGR2GRAY)
-                extrapolate_scale = image_out_scale / face_detect_scale
                 faces = face_cascade.detectMultiScale(gray, 1.3, 5)
                 for (x, y, w, h) in faces:
-                    frame = cv2.rectangle(out_img, (int(x * extrapolate_scale), int(y * extrapolate_scale)), (
-                        int(x * extrapolate_scale + w * extrapolate_scale),
-                        int(y * extrapolate_scale + h * extrapolate_scale)),
+                    frame = cv2.rectangle(raw_img, (int(x / face_detect_scale), int(y / face_detect_scale)), (
+                        int(x / face_detect_scale + w / face_detect_scale),
+                        int(y / face_detect_scale + h / face_detect_scale)),
                                           (255, 0, 0), 2)
-                img = out_img
+                img = raw_img
             # MOTION DETECTION
             elif self.operation == CVEnumerations.MOTION_DETECTION:
                 i = 1
-            elif self.operation == CVEnumerations.EDGE_DETECTION:
-                global img
-                grabbed, raw_img = cam.read()
-                edges = cv2.Canny(raw_img,100,200)
+            elif self.operation == CVEnumerations.CANNY_EDGE_DETECTION:
+                grabbed, raw_img = get_raw_image()
+                img = cv2.Canny(raw_img, 100, 200)
 
         print "end thread"
 
@@ -101,6 +92,12 @@ def sample_image_from_operation():
 def set_image_scale(scale):
     global image_out_scale
     image_out_scale = scale
+
+
+def get_raw_image():
+    ret, raw_img = cam.read()
+    res_img = imutils.resize(raw_img, width=int(width * image_out_scale), height=int(height * image_out_scale))
+    return ret, res_img
 
 
 def switch_cv_operation(operation=CVEnumerations.RAW_IMAGE):

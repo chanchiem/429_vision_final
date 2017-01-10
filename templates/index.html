@@ -94,6 +94,8 @@
                 $('#operation_face')[0].selected = true
             else if (cv_operation == {{MOTION_DETECTION}})
                 $('#operation_motion')[0].selected = true
+            else if (cv_operation == {{CANNY_EDGE_DETECTION}})
+                $('#operation_canny_edge')[0].selected = true
         }
 
 
@@ -125,12 +127,6 @@
             $('#image_placeholder').attr("src", "data:image/jpg;base64," + img);
             $('#timestamp').text("Picture taken on: " + timestamp); // Mark timestamp
             handle_operation_selection(cv_operation);
-//            $('#ping').text("Response time: " + ((nowTime - responseTime) / 1000) + " seconds.");
-
-//            if (nowTime % 2 == 0) {
-//                $('#ping').text((imgCount * 2).toFixed(2) + " frames per second."); // Crude FPS counter
-//                imgCount = 0;
-//            }
             $('#ping').text((1 / ((nowTime - responseTime) / 1000)).toFixed(2) + " frames per second."); // Crude FPS counter
             start_stream_request();
         }
@@ -140,10 +136,13 @@
         }
 
         // Request a single image from the server.
+        var requesting_operation_change = false;
         function request_operation_change(operation) {
+            requesting_operation_change = true;
             $.ajax({
                 url: '/cmd/' + operation,
-                type: 'GET'
+                type: 'GET',
+                success: new function() { var requesting_operation_change = false }
             })
         }
 
@@ -179,7 +178,7 @@
                                     start_stream_request();
             }"/>
             <br><br>
-            <select id="operation" size="3" style="width: 125px; text-align: center;">
+            <select id="operation" size="4" style="width: 125px; text-align: center;">
                 <option id="operation_raw" onclick="request_operation_change(this.value)" value="cv_raw_img" {% if
                         get_current_cv_operation== RAW_IMAGE %} selected {% endif %}>Raw Image
                 </option>
@@ -188,6 +187,9 @@
                 </option>
                 <option id="operation_motion" onclick="request_operation_change(this.value)" value="cv_motion_detect" {% if
                         get_current_cv_operation== MOTION_DETECTION %} selected {% endif %}>Motion Detection
+                </option>
+                <option id="operation_canny_edge" onclick="request_operation_change(this.value)" value="cv_canny_edge_detect" {% if
+                        get_current_cv_operation== CANNY_EDGE_DETECTION %} selected {% endif %}>Canny Edge Detection
                 </option>
             </select>
         </td>
