@@ -13,6 +13,8 @@ import time
 import imutils
 import CVEnumerations
 import threading
+import numpy as np
+import datetime
 
 
 ## SUBSIDIARY CLASSES ##
@@ -49,8 +51,58 @@ class CVThread(threading.Thread):
                                           (255, 0, 0), 2)
                 img = raw_img
             # MOTION DETECTION
+            # This code was modified from code found on the follow website:
+            # http://www.pyimagesearch.com/2015/05/25/basic-motion-detection-and-tracking-with-python-and-opencv/
             elif self.operation == CVEnumerations.MOTION_DETECTION:
-                i = 1
+            	global compFrame
+            	global start
+            	#global frameDeltaSumPrev
+            	#global frameDeltaSumCurr
+            	#global frameDelta
+                grabbed, frame = get_raw_image()
+                
+                if not grabbed:
+                	break
+                
+                # Converts the image from rgb to gray and blurs the gray image
+                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                gray = cv2.GaussianBlur(gray, (21,21), 0)
+                
+                # Sets the comparison frame to gray during the first run through this loop
+                if compFrame is None:
+                	compFrame = gray
+                	continue
+                
+                # Resets the comparison frame every five seconds
+                timeElapsed = time.time() - start
+                if timeElapsed > 5:
+					start = time.time()
+					firstFrame = gray
+                	
+                # Resets timeElapsed counter if camera detects movement
+                #if frameDelta is not None:
+	            #   frameDeltaSumPrev = np.sum(np.sum(frameDelta))
+				#	frameDeltaSumCurr = np.sum(np.sum(cv2.absdiff(firstFrame, gray)))
+				#	if abs(int(frameDeltaSumPrev) - int(frameDeltaSumCurr)) > 20000:
+				#		start = time.time()
+                
+                # Computes the absolute difference in pixel values of the comparison
+                # frame and the current frame
+                frameDelta = cv2.absdiff(firstFrame, gray)
+                thresh = cv2.threshold(frameDelta, 25, 255, cv2.THRESH_BINARY)[1]
+                thresh = cv2.dilate(thresh, None, iterations=2)
+                (_, cnts, _) = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
+                	cv2.CHAIN_APPROX_SIMPLE)
+                	
+                # Draws rectangles around the areas where motion was detected
+                for c in cnts:
+                	if cv2.contourArea(c) < 500:
+                		continue
+                	(x, y, w, h) = cv2.boundingRect(c)
+                	cv2.rectangle(frame, (x,y), (x+w, y+h), (0,255,0), 2)
+                	
+                img = frame
+            # CANNY EDGE DETECTION
             elif self.operation == CVEnumerations.CANNY_EDGE_DETECTION:
                 grabbed, raw_img = get_raw_image()
                 img = cv2.Canny(raw_img, 100, 200)
@@ -61,12 +113,14 @@ class CVThread(threading.Thread):
 ###
 
 ## Singleton Variables ##
-face_cascade = cv2.CascadeClassifier(
-    '/Users/ChiemSaeteurn/PycharmProjects/Cos429_Final/haarcascade_frontalface_default.xml')
+#face_cascade = cv2.CascadeClassifier(
+#    '/Users/ChiemSaeteurn/PycharmProjects/Cos429_Final/haarcascade_frontalface_default.xml')
+face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 image_out_scale = .5  # Used for output image resizing
 
 print "Starting up camera..."
-cam = cv2.VideoCapture(1)
+#cam = cv2.VideoCapture(1)
+cam = cv2.VideoCapture(0)
 time.sleep(.5)
 ret, img = cam.read()
 height = len(img)
@@ -74,6 +128,12 @@ width = len(img[0])
 img = imutils.resize(img, width=int(width * image_out_scale), height=int(height * image_out_scale))
 
 cv_thread = CVThread(CVEnumerations.RAW_IMAGE)
+
+compFrame = None
+start = time.time()
+#frameDeltaSumPrev = 0
+#frameDeltaSumCurr = 0
+#frameDelta = None
 
 
 ############################
