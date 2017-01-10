@@ -31,7 +31,9 @@
                         width: $(this).width(),
                         height: $(this).height()
                     },
-                    success: function(data) { alert(data); }
+                    success: function (data) {
+                        alert(data);
+                    }
                 });
             });
         });
@@ -73,12 +75,25 @@
 
             var img = json_data['encoded_picture'];
             var timestamp = json_data['timestamp'];
+            var cv_operation = json_data['cv_operation'];
+
             var nowTime = new Date().getTime();
 
             // Write image data to placeholder
             $('#image_placeholder').attr("src", "data:image/jpg;base64," + img);
             $('#timestamp').text("Picture taken on: " + timestamp); // Mark timestamp
             $('#ping').text("Response time: " + ((nowTime - responseTime) / 1000) + " seconds.");
+
+            handle_operation_selection(cv_operation);
+        }
+
+        function handle_operation_selection(cv_operation) {
+            if (cv_operation == {{RAW_IMAGE}})
+                $('#operation_raw')[0].selected = true
+            else if (cv_operation == {{FACE_DETECTION}})
+                $('#operation_face')[0].selected = true
+            else if (cv_operation == {{MOTION_DETECTION}})
+                $('#operation_motion')[0].selected = true
         }
 
 
@@ -102,11 +117,14 @@
 
             var img = json_data['encoded_picture'];
             var timestamp = json_data['timestamp'];
+            var cv_operation = json_data['cv_operation'];
+
             var nowTime = new Date().getTime();
 
             // Write image data to placeholder
             $('#image_placeholder').attr("src", "data:image/jpg;base64," + img);
             $('#timestamp').text("Picture taken on: " + timestamp); // Mark timestamp
+            handle_operation_selection(cv_operation);
 //            $('#ping').text("Response time: " + ((nowTime - responseTime) / 1000) + " seconds.");
 
 //            if (nowTime % 2 == 0) {
@@ -119,6 +137,14 @@
 
         function getClickPosition(e) {
             console.log(e.clientX + " " + e.clientY);
+        }
+
+        // Request a single image from the server.
+        function request_operation_change(operation) {
+            $.ajax({
+                url: '/cmd/' + operation,
+                type: 'GET'
+            })
         }
 
     </script>
@@ -151,7 +177,19 @@
                                     }
                                     isStreaming = !isStreaming;
                                     start_stream_request();
-                                }"/>
+            }"/>
+            <br><br>
+            <select id="operation" size="3" style="width: 125px; text-align: center;">
+                <option id="operation_raw" onclick="request_operation_change(this.value)" value="cv_raw_img" {% if
+                        get_current_cv_operation== RAW_IMAGE %} selected {% endif %}>Raw Image
+                </option>
+                <option id="operation_face"onclick="request_operation_change(this.value)" value="cv_face_detection" {% if
+                        get_current_cv_operation== FACE_DETECTION %} selected {% endif %}>Face Detection
+                </option>
+                <option id="operation_motion" onclick="request_operation_change(this.value)" value="cv_motion_detect" {% if
+                        get_current_cv_operation== MOTION_DETECTION %} selected {% endif %}>Motion Detection
+                </option>
+            </select>
         </td>
     </tr>
     <tr>
