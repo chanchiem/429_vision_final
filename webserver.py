@@ -39,6 +39,7 @@ def main():
     templateData = {
         'title': 'Chiem Cam',
         'get_current_cv_operation': camera.get_current_cv_operation(),
+        'is_notify_on_motion': camera.get_notify_on_motion,
         'RAW_IMAGE': CVEnumerations.RAW_IMAGE,
         'FACE_DETECTION': CVEnumerations.FACE_DETECTION,
         'MOTION_DETECTION': CVEnumerations.MOTION_DETECTION,
@@ -85,8 +86,13 @@ def take_picture():
     picture_obj = {
         'timestamp': datetime.datetime.now().strftime("%Y-%m-%d at %I.%M.%S %p"),
         'encoded_picture': base64.b64encode(img),
-        'cv_operation': camera.get_current_cv_operation()
+        'cv_operation': camera.get_current_cv_operation(),
+        'notify_motion': camera.get_notify_on_motion()
     }
+
+    # Send notification of motion detection to server
+    if camera.get_notify_on_motion():
+        picture_obj['motion_detected'] = camera.has_motion_detect()
 
     return json.dumps(picture_obj)
 
@@ -100,6 +106,12 @@ def click_picture():
 
     return "x: " + str(x_pos) + " - y: " + str(
         y_pos) + " - width: " + client_img_width + " - height: " + client_img_height;
+
+@app.route("/cmd/set_notify_motion")
+def set_notify_motion():
+    state = request.args.get('bool')
+    camera.set_notify_on_motion(state)
+    return str(camera.get_notify_on_motion())
 
 
 @app.route("/cmd/cv_raw_img")

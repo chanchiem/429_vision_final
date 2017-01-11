@@ -56,6 +56,7 @@ class CVThread(threading.Thread):
             elif self.operation == CVEnumerations.MOTION_DETECTION:
                 global compFrame
                 global start
+                global has_motion_detected
                 # global frameDeltaSumPrev
                 # global frameDeltaSumCurr
                 # global frameDelta
@@ -77,7 +78,7 @@ class CVThread(threading.Thread):
                 timeElapsed = time.time() - start
                 if timeElapsed > 5:
                     start = time.time()
-                    firstFrame = gray
+                    compFrame = gray
 
                     # Resets timeElapsed counter if camera detects movement
                     # if frameDelta is not None:
@@ -88,18 +89,21 @@ class CVThread(threading.Thread):
 
                 # Computes the absolute difference in pixel values of the comparison
                 # frame and the current frame
-                frameDelta = cv2.absdiff(firstFrame, gray)
+                frameDelta = cv2.absdiff(compFrame, gray)
                 thresh = cv2.threshold(frameDelta, 25, 255, cv2.THRESH_BINARY)[1]
                 thresh = cv2.dilate(thresh, None, iterations=2)
                 (_, cnts, _) = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
                                                 cv2.CHAIN_APPROX_SIMPLE)
 
                 # Draws rectangles around the areas where motion was detected
+                if (len(cnts) == 0):
+                    has_motion_detected = False
                 for c in cnts:
                     if cv2.contourArea(c) < 500:
                         continue
                     (x, y, w, h) = cv2.boundingRect(c)
                     cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                    has_motion_detected = True
 
                 img = frame
             # CANNY EDGE DETECTION
@@ -122,24 +126,30 @@ class CVThread(threading.Thread):
                 img = raw_img
             # KEYPOINT DETECTION
             elif self.operation == CVEnumerations.KEYPOINT_DETECTION:
-            	grabbed, frame = get_raw_image()
-            	
-            	if not grabbed:
-            		break	
-            	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            	
-            	sift = cv2.xfeatures2d.SIFT_create()
-            	kp = sift.detect(gray, None)
-            	frame = cv2.drawKeypoints(gray, kp, frame)
-            	img = frame
-            	
+                grabbed, frame = get_raw_image()
+
+                if not grabbed:
+                    break
+                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+                sift = cv2.xfeatures2d.SIFT_create()
+                kp = sift.detect(gray, None)
+                frame = cv2.drawKeypoints(gray, kp, frame)
+                img = frame
+
         print "end thread"
+
+    def get_operation(self):
+        return self.operation
+
+    def set_operation(self, input_operation):
+        self.operation = input_operation
 
 
 ############################
 
 def get_current_cv_operation():
-    return cv_thread.operation
+    return cv_thread.get_operation()
 
 
 def sample_image_from_operation():
@@ -167,7 +177,7 @@ def get_raw_image(scale=True):
 
 def switch_cv_operation(operation=CVEnumerations.RAW_IMAGE):
     global cv_thread
-    cv_thread.operation = operation
+    cv_thread.set_operation(operation)
 
 
 def start_cv_operation():
@@ -175,6 +185,20 @@ def start_cv_operation():
         if not cv_thread.isRunning:
             cv_thread.isRunning = True
             cv_thread.start()
+
+
+def has_motion_detect():
+    return has_motion_detected
+
+
+def set_notify_on_motion(state):
+    global notify_on_motion_detect
+    notify_on_motion_detect = state
+
+
+def get_notify_on_motion():
+    global notify_on_motion_detect
+    return notify_on_motion_detect
 
 
 def stop():
@@ -188,13 +212,13 @@ def stop():
 ## Start Everything ##
 ######################
 
-#face_cascade = cv2.CascadeClassifier(
-#    '/Users/ChiemSaeteurn/PycharmProjects/Cos429_Final/haarcascade_frontalface_default.xml')
-face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+face_cascade = cv2.CascadeClassifier(
+    '/Users/ChiemSaeteurn/PycharmProjects/Cos429_Final/haarcascade_frontalface_default.xml')
+# face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 image_out_scale = .5  # Used for output image resizing
 
 print "Starting up camera..."
-cam = cv2.VideoCapture(0)
+cam = cv2.VideoCapture(1)
 time.sleep(.5)
 ret, img = get_raw_image()
 
@@ -202,6 +226,8 @@ cv_thread = CVThread(CVEnumerations.RAW_IMAGE)
 
 compFrame = None
 start = time.time()
+has_motion_detected = False
+notify_on_motion_detect = False
 # frameDeltaSumPrev = 0
 # frameDeltaSumCurr = 0
 # frameDelta = None
