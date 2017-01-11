@@ -120,6 +120,19 @@ class CVThread(threading.Thread):
                 # Threshold for an optimal value, it may vary depending on the image.
                 raw_img[dst > 0.01 * dst.max()] = [0, 0, 255]
                 img = raw_img
+            # KEYPOINT DETECTION
+            elif self.operation == CVEnumerations.KEYPOINT_DETECTION:
+            	grabbed, frame = get_raw_image()
+            	
+            	if not grabbed:
+            		break	
+            	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            	
+            	sift = cv2.xfeatures2d.SIFT_create()
+            	kp = sift.detect(gray, None)
+            	frame = cv2.drawKeypoints(gray, kp, frame)
+            	img = frame
+            	
         print "end thread"
 
 
@@ -175,13 +188,13 @@ def stop():
 ## Start Everything ##
 ######################
 
-face_cascade = cv2.CascadeClassifier(
-    '/Users/ChiemSaeteurn/PycharmProjects/Cos429_Final/haarcascade_frontalface_default.xml')
-# face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+#face_cascade = cv2.CascadeClassifier(
+#    '/Users/ChiemSaeteurn/PycharmProjects/Cos429_Final/haarcascade_frontalface_default.xml')
+face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 image_out_scale = .5  # Used for output image resizing
 
 print "Starting up camera..."
-cam = cv2.VideoCapture(1)
+cam = cv2.VideoCapture(0)
 time.sleep(.5)
 ret, img = get_raw_image()
 

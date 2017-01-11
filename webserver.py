@@ -43,7 +43,8 @@ def main():
         'FACE_DETECTION': CVEnumerations.FACE_DETECTION,
         'MOTION_DETECTION': CVEnumerations.MOTION_DETECTION,
         'CANNY_EDGE_DETECTION': CVEnumerations.CANNY_EDGE_DETECTION,
-        'CORNER_DETECTION': CVEnumerations.CORNER_DETECTION
+        'CORNER_DETECTION': CVEnumerations.CORNER_DETECTION,
+        'KEYPOINT_DETECTION': CVEnumerations.KEYPOINT_DETECTION
     }
 
     # Pass the template data into the template picam.html and return it to the user
@@ -129,7 +130,11 @@ def canny_edge_detect():
 def corner_detect():
     camera.switch_cv_operation(CVEnumerations.CORNER_DETECTION)
     return "1"
-
+    
+@app.route("/cmd/cv_keypoint_detect")
+def keypoint_detect():
+    camera.switch_cv_operation(CVEnumerations.KEYPOINT_DETECTION)
+    return "1"
 
 if __name__ == "__main__":
     # # allow the camera to warmup

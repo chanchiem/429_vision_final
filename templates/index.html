@@ -98,6 +98,8 @@
                 $('#operation_canny_edge')[0].selected = true
             else if (cv_operation == {{CORNER_DETECTION}})
                 $('#operation_corner')[0].selected = true
+            else if (cv_operation == {{KEYPOINT_DETECTION}})
+                $('#operation_keypoint')[0].selected = true
         }
 
         var imgCount = 0;
@@ -192,7 +194,7 @@
                                     start_stream_request();
             }"/>
             <br><br>
-            <select id="operation" size="5" style="width: 125px; text-align: center;">
+            <select id="operation" size="6" style="width: 125px; text-align: center;">
                 <option id="operation_raw" onclick="request_operation_change(this.value)" value="cv_raw_img" {% if
                         get_current_cv_operation== RAW_IMAGE %} selected {% endif %}>Raw Image
                 </option>
@@ -210,6 +212,10 @@
                 <option id="operation_corner" onclick="request_operation_change(this.value)" value="cv_corner_detect" {%
                         if
                         get_current_cv_operation== CORNER_DETECTION %} selected {% endif %}>Corner Detection
+                </option>
+                <option id="operation_keypoint" onclick="request_operation_change(this.value)" value="cv_keypoint_detect" {%
+                        if
+                        get_current_cv_operation== KEYPOINT_DETECTION %} selected {% endif %}>Keypoint Detection
                 </option>
             </select>
         </td>
